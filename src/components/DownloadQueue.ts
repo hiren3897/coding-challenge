@@ -1,4 +1,4 @@
-import type { DownloadCompleteEventData, DownloadProgressEventData, DownloadQueueMode } from '../types/downloadQueue';
+import type { DownloadCompleteEventData, DownloadErrorEventData, DownloadProgressEventData, DownloadQueueMode } from '../types/downloadQueue';
 import { EventBus } from './EventBus';
 
 export class DownloadQueue {
@@ -38,6 +38,8 @@ export class DownloadQueue {
     // fake progress using timeout
     const totalBytes = 100;
     let bytes = 0;
+    const failed = Math.random() < 0.3; // simulate a fake 30% failure rate
+
     while (bytes < totalBytes) {
       await new Promise(res => setTimeout(res, 15));
       bytes += 25;
@@ -46,13 +48,23 @@ export class DownloadQueue {
         timestamp: Date.now(),
         data: { url, bytesDownloaded: Math.min(bytes, totalBytes) },
       });
+
+      if (failed && bytes >= 50) {
+        this.bus.post<DownloadErrorEventData>({
+          type: 'download_error',
+          timestamp: Date.now(),
+          data: { url, error: 'Download failed due to network error' },
+        });
+        return;
+      }
     }
 
-    // download is complete
-    this.bus.post<DownloadCompleteEventData>({
-      type: 'download_complete',
-      timestamp: Date.now(),
-      data: { url, content: 'Dummy content for ' + url },
-    });
+    if (!failed) {
+      this.bus.post<DownloadCompleteEventData>({
+        type: 'download_complete',
+        timestamp: Date.now(),
+        data: { url, content: 'Dummy content for ' + url },
+      });
+    }
   }
 }

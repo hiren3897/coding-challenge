@@ -40,11 +40,19 @@ export class EventBus {
     }
 
     post<T>(event: BaseEvent<T>): void {
-        const entries = this.listeners.get(event.type);
-        if (!entries) return;
-        
-        for (const entry of entries) {
-            entry.listener(event);
+    const entries = this.listeners.get(event.type);
+    if (!entries) return;
+
+    for (const entry of entries) {
+        try {
+        entry.listener(event);
+        } catch (error) {
+        console.error(
+            `[EventBus] Error in listener for event "${event.type}":`,
+            (error as Error).message
+        );
         }
+      }
     }
+
 }

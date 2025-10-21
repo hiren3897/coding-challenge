@@ -8,4 +8,9 @@ export interface DownloadCompleteEventData {
   content: string;
 }
 
+export interface DownloadErrorEventData {
+  url: string;
+  error: string;
+}
+
 export type DownloadQueueMode = 'Async' | 'Sync';
