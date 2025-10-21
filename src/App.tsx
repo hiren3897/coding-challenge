@@ -1,4 +1,8 @@
 import './App.css'
+import { CounterDemo } from './components/CounterDemo'
+import { EventBus } from './components/EventBus';
+
+const bus = new EventBus();
 
 function App() {
 
@@ -7,6 +11,7 @@ function App() {
       <div>
         Welcome to Coding Challenge
       </div>
+      <CounterDemo bus={bus} />
     </>
   )
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { EventBus } from '../components/EventBus';
 import { DownloadQueue } from '../components/DownloadQueue';
-import type { DownloadCompleteEventData } from '../types/downloadQueue';
+import type { DownloadCompleteEventData, DownloadProgressEventData } from '../types/downloadQueue';
 
 
 describe('DownloadQueue', () => {
@@ -27,5 +27,17 @@ describe('DownloadQueue', () => {
     queue.addUrls(['file1', 'file2']);
     await queue.start();
     expect(completed).toEqual(['file1', 'file2']); // Order should be preserved in sync mode
+  });
+
+  it('fires progress events at each step', async () => {
+    const progresses: {url: string; bytes: number}[] = [];
+    bus.register<DownloadProgressEventData>('download_progress', e => {
+      progresses.push({ url: e.data.url, bytes: e.data.bytesDownloaded });
+    });
+    const queue = new DownloadQueue(bus, 'Sync');
+    queue.addUrls(['file1']);
+    await queue.start();
+    expect(progresses.length).toBeGreaterThan(0);
+    expect(progresses.some(p => p.bytes === 100)).toBe(true);
   });
 });
